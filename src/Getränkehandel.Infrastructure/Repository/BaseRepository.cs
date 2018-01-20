@@ -3,8 +3,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Getränkehandel.Business.Model;
+using Getränkehandel.Business.Repository;
 using Getränkehandel.Infrastructure.Data;
-using Getränkehandel.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace Getränkehandel.Infrastructure.Repository

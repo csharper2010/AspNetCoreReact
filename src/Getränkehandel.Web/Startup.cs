@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Getränkehandel.Business.Repository;
 using Getränkehandel.Infrastructure.Data;
 using Getränkehandel.Infrastructure.Repository;
-using Getränkehandel.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,6 +21,25 @@ namespace Getränkehandel.Web
             services.AddDbContext<GetränkehandelContext>();
 
             services.AddScoped(typeof(IRepository<,>), typeof(BaseRepository<,>));
+
+            services.AddMvcCore(options =>
+                {
+                    options.RequireHttpsPermanent = true; // this does not affect api requests
+                    options.RespectBrowserAcceptHeader = true; // false by default
+                    //options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
+
+                    // // these two are here to show you where to include custom formatters
+                    // options.OutputFormatters.Add(new CustomOutputFormatter());
+                    // options.InputFormatters.Add(new CustomInputFormatter());
+                })
+                //.AddApiExplorer()
+                //.AddAuthorization()
+                .AddFormatterMappings()
+                //.AddCacheTagHelper()
+                //.AddDataAnnotations()
+                //.AddCors()
+                .AddJsonFormatters();
+            //services.AddMvc(routes => routes.);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -31,10 +50,7 @@ namespace Getränkehandel.Web
                 app.UseDeveloperExceptionPage();
             }
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
-            });
+            app.UseMvcWithDefaultRoute();
         }
     }
 }
