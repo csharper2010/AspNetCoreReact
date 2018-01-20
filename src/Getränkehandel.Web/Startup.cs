@@ -8,6 +8,7 @@ using Getränkehandel.Infrastructure.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Getränkehandel.Web
@@ -22,24 +23,7 @@ namespace Getränkehandel.Web
 
             services.AddScoped(typeof(IRepository<,>), typeof(BaseRepository<,>));
 
-            services.AddMvcCore(options =>
-                {
-                    options.RequireHttpsPermanent = true; // this does not affect api requests
-                    options.RespectBrowserAcceptHeader = true; // false by default
-                    //options.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
-
-                    // // these two are here to show you where to include custom formatters
-                    // options.OutputFormatters.Add(new CustomOutputFormatter());
-                    // options.InputFormatters.Add(new CustomInputFormatter());
-                })
-                //.AddApiExplorer()
-                //.AddAuthorization()
-                .AddFormatterMappings()
-                //.AddCacheTagHelper()
-                //.AddDataAnnotations()
-                //.AddCors()
-                .AddJsonFormatters();
-            //services.AddMvc(routes => routes.);
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,9 +32,29 @@ namespace Getränkehandel.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                // app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                // {
+                //     HotModuleReplacement = true,
+                //     ReactHotModuleReplacement = true,
+                // });
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseMvcWithDefaultRoute();
+            app.UseStaticFiles();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapSpaFallbackRoute(
+                    name: "spa-fallback",
+                    defaults: new { controller = "Home", action = "Index" });
+            });
         }
     }
 }

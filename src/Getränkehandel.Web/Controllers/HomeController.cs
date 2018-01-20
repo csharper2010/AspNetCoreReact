@@ -1,12 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Getränkehandel.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public string Index() => "Hello World";
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        public IActionResult Error()
+        {
+            ViewData["RequestId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+            return View();
+        }
     }
 }

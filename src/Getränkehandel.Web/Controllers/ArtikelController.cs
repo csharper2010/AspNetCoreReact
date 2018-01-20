@@ -21,9 +21,12 @@ namespace Getränkehandel.Web.Controllers
 
         // GET api/artikel/5
         [HttpGet("{id}")]
-        public async Task<Artikel> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return await repository.GetById(id);
+            var artikel = await repository.GetById(id);
+            return artikel != null
+                ? (IActionResult)Ok(artikel)
+                : NotFound();
         }
     }
 }
