@@ -5,13 +5,88 @@
     "tasks": [
         {
             "label": "build",
-            "command": "dotnet build Getränkehandel.Infrastructure/Getränkehandel.Infrastructure.csproj",
+            "command": "dotnet build Getränkehandel.Web/Getränkehandel.Web.csproj",
             "type": "shell",
             "group": "build",
             "presentation": {
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
-        }
+        },
+        {
+            "label": "build test",
+            "command": "dotnet build test/Getränkehandel.Business.Tests/Getränkehandel.Business.Tests.csproj",
+            "type": "shell",
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "ef migrations add",
+            "command": "dotnet ef migrations add Initial",
+            "type": "shell",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceRoot}/Getränkehandel.Infrastructure",
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "ef migrations remove",
+            "command": "dotnet ef migrations remove",
+            "type": "shell",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceRoot}/Getränkehandel.Infrastructure"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "ef database update",
+            "command": "dotnet ef database update",
+            "type": "shell",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceRoot}/Getränkehandel.Infrastructure"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "ef database drop",
+            "command": "dotnet ef database drop",
+            "type": "shell",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceRoot}/Getränkehandel.Infrastructure"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test",
+            "command": "dotnet test",
+            "type": "shell",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceRoot}/test/Getränkehandel.Business.Tests"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
     ]
 }

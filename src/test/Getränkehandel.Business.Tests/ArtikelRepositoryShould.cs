@@ -11,32 +11,64 @@ namespace Getränkehandel.Business.Tests
         [Fact]
         public async void FindSavedAndFlushedArtikel()
         {
-            var context = new GetränkehandelContext();
-            var repository = new ArtikelRepository(context);
-            
-            var artikel = new Artikel("Adelholzener Mineralwasser");
-            int initialArtikelID = artikel.ID;
+            using (var context = new GetränkehandelContext())
+            using (var otherContext = new GetränkehandelContext())
+            {
+                var repository = new BaseRepository<Artikel, int>(context);
 
-            await repository.Save(artikel);
+                var artikel = new Artikel("Adelholzener Mineralwasser");
+                int initialArtikelID = artikel.ID;
 
-            int savedArtikelID = artikel.ID;
+                await repository.Save(artikel);
 
-            var artikelBeforeSaveChanges = await repository.GetById(savedArtikelID);
+                int savedArtikelID = artikel.ID;
 
-            context.SaveChanges();
+                var artikelBeforeSaveChanges = await repository.GetById(savedArtikelID);
 
-            int flushedArtikelID = artikel.ID;
+                context.SaveChanges();
 
-            var artikelFromSameContext = await repository.GetById(flushedArtikelID);
-            var artikelFromOtherContext = await new ArtikelRepository(new GetränkehandelContext()).GetById(flushedArtikelID);
+                int flushedArtikelID = artikel.ID;
 
-            Assert.Equal(0, initialArtikelID);
-            Assert.True(savedArtikelID < 0);
-            Assert.True(flushedArtikelID > 0);
-            Assert.NotEqual(savedArtikelID, flushedArtikelID);
-            Assert.Same(artikel, artikelBeforeSaveChanges);
-            Assert.Same(artikel, artikelFromSameContext);
-            Assert.NotSame(artikel, artikelFromOtherContext);
+                var artikelFromSameContext = await repository.GetById(flushedArtikelID);
+                var artikelFromOtherContext = await new BaseRepository<Artikel, int>(new GetränkehandelContext()).GetById(flushedArtikelID);
+                Assert.Equal(0, initialArtikelID);
+                Assert.True(savedArtikelID < 0);
+                Assert.True(flushedArtikelID > 0);
+                Assert.NotEqual(savedArtikelID, flushedArtikelID);
+                Assert.Same(artikel, artikelBeforeSaveChanges);
+                Assert.Same(artikel, artikelFromSameContext);
+                Assert.NotSame(artikel, artikelFromOtherContext);
+            }
+        }
+
+        [Fact]
+        public async void TrackChanges()
+        {
+            int flushedArtikelID;
+
+            using (var context = new GetränkehandelContext())
+            {
+                var repository = new BaseRepository<Artikel, int>(context);
+
+                var artikel = new Artikel("Adelholzener Mineralwasser Classic");
+                await repository.Save(artikel);
+                context.SaveChanges();
+                flushedArtikelID = artikel.ID;
+            }
+            using (var context = new GetränkehandelContext())
+            {
+                var repository = new BaseRepository<Artikel, int>(context);
+                var artikel = await repository.GetById(flushedArtikelID);
+                artikel.BezeichnungKurz = "Adelh. Mineralw. Classic";
+                context.SaveChanges();
+            }
+            using (var context = new GetränkehandelContext())
+            {
+                var repository = new BaseRepository<Artikel, int>(context);
+                var artikel = await repository.GetById(flushedArtikelID);
+
+                Assert.Equal("Adelh. Mineralw. Classic", artikel.BezeichnungKurz);
+            }
         }
     }
 }

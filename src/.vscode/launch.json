@@ -10,9 +10,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/test/Getränkehandel.Business.Tests/bin/Debug/netcoreapp2.0/Getränkehandel.Business.Tests.dll",
+            "program": "${workspaceFolder}/Getränkehandel.Web/bin/Debug/netcoreapp2.0/Getränkehandel.Web.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/test/Getränkehandel.Business.Tests",
+            "cwd": "${workspaceFolder}/Getränkehandel.Web",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
             "stopAtEntry": false,

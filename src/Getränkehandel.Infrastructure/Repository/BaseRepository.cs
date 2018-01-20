@@ -4,31 +4,30 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Getränkehandel.Business.Model;
 using Getränkehandel.Infrastructure.Data;
+using Getränkehandel.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace Getränkehandel.Infrastructure.Repository
 {
-    public abstract class BaseRepository<TEntity, TID>
+    public class BaseRepository<TEntity, TID> : IRepository<TEntity, TID>
         where TEntity : class, IWithID<TID>
         where TID : struct, IEquatable<TID>
     {
         private readonly GetränkehandelContext dbContext;
-        private readonly Func<GetränkehandelContext, DbSet<TEntity>> getDbSet;
 
-        protected BaseRepository(GetränkehandelContext dbContext, Func<GetränkehandelContext, DbSet<TEntity>> getDbSet)
+        public BaseRepository(GetränkehandelContext dbContext)
         {
             this.dbContext = dbContext;
-            this.getDbSet = getDbSet;
         }
 
-        public async Task<TEntity> GetById(int id)
+        public async Task<TEntity> GetById(TID id)
         {
-            var dbSet = getDbSet(dbContext);
+            var dbSet = dbContext.Set<TEntity>();
             Expression<Func<TEntity, bool>> predicate = a => id.Equals(a.ID);
             var result = dbSet.Local.SingleOrDefault(a => a.ID.Equals(id));
             return result ?? await dbSet.SingleOrDefaultAsync(predicate);
         }
 
-        public async Task<TEntity> Save(TEntity artikel) => (await dbContext.AddAsync(artikel)).Entity;
+        public async Task<TEntity> Save(TEntity entity) => (await dbContext.AddAsync(entity)).Entity;
     }
 }
