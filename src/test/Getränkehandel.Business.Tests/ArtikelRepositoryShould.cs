@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Getränkehandel.Business.Model;
 using Getränkehandel.Infrastructure.Data;
 using Getränkehandel.Infrastructure.Repository;
@@ -16,7 +17,9 @@ namespace Getränkehandel.Business.Tests
             {
                 var repository = new BaseRepository<Artikel, int>(context);
 
-                var artikel = new Artikel("Adelholzener Mineralwasser");
+                var artikel = new EinfacherArtikel("Adelholzener Mineralwasser 0.7l");
+                artikel.PfandID = 3;
+
                 int initialArtikelID = artikel.ID;
 
                 await repository.Save(artikel);
@@ -24,6 +27,12 @@ namespace Getränkehandel.Business.Tests
                 int savedArtikelID = artikel.ID;
 
                 var artikelBeforeSaveChanges = await repository.GetById(savedArtikelID);
+
+                var gebinde = new Gebinde("Adelholzener Mineralwasser 12x0.7l");
+                gebinde.Inhalt.Add(new GebindeInhalt(12, artikel));
+                gebinde.PfandID = 5;
+
+                await repository.Save(gebinde);
 
                 context.SaveChanges();
 
@@ -44,30 +53,47 @@ namespace Getränkehandel.Business.Tests
         [Fact]
         public async void TrackChanges()
         {
-            int flushedArtikelID;
+            int flushedArtikelID, flushedGebindeId;
 
             using (var context = new GetränkehandelContext())
             {
                 var repository = new BaseRepository<Artikel, int>(context);
 
-                var artikel = new Artikel("Adelholzener Mineralwasser Classic");
+                var artikel = new EinfacherArtikel("Adelholzener Mineralwasser Classic");
+                artikel.PfandID = 3;
                 await repository.Save(artikel);
+
+                var gebinde = new Gebinde("Adelholzener Mineralwasser Classic 12x0.7l");
+                gebinde.Inhalt.Add(new GebindeInhalt(12, artikel));
+                gebinde.PfandID = 5;
+
+                await repository.Save(gebinde);
+
                 context.SaveChanges();
                 flushedArtikelID = artikel.ID;
+                flushedGebindeId = gebinde.ID;
             }
             using (var context = new GetränkehandelContext())
             {
                 var repository = new BaseRepository<Artikel, int>(context);
                 var artikel = await repository.GetById(flushedArtikelID);
                 artikel.BezeichnungKurz = "Adelh. Mineralw. Classic";
+                var gebinde = await repository.GetById(flushedGebindeId);
+                gebinde.BezeichnungKurz = "Adelh. Mineralw. Class. 12";
                 context.SaveChanges();
             }
             using (var context = new GetränkehandelContext())
             {
                 var repository = new BaseRepository<Artikel, int>(context);
                 var artikel = await repository.GetById(flushedArtikelID);
+                var gebinde = await repository.GetById(flushedGebindeId) as Gebinde;
 
                 Assert.Equal("Adelh. Mineralw. Classic", artikel.BezeichnungKurz);
+                Assert.Equal("Adelh. Mineralw. Class. 12", gebinde.BezeichnungKurz);
+                Assert.NotNull(artikel.Pfand);
+                Assert.NotNull(gebinde.Pfand);
+                Assert.NotEmpty(gebinde.Inhalt);
+                Assert.Equal(artikel, gebinde.Inhalt.First().Artikel);
             }
         }
     }

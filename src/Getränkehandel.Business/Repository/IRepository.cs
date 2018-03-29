@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Getränkehandel.Business.Model;
 
@@ -9,5 +11,7 @@ namespace Getränkehandel.Business.Repository {
     {
         Task<TEntity> GetById(TID id);
         Task<TEntity> Save(TEntity entity);
+        Task<IEnumerable<TEntity>> Find(Expression<Func<TEntity, bool>> predicate);
+        void Delete(TEntity entity);
     }
 }

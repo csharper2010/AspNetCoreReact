@@ -1,0 +1,12 @@
+@import '~spectre.css/dist/spectre.css';
+@import '~spectre.css/dist/spectre-exp.css';
+@import '~spectre.css/dist/spectre-icons.css';
+
+th {
+    text-align: left;
+}
+
+table.table button {
+    margin-top: -0.35rem;
+    margin-bottom: -0.35rem;
+} 

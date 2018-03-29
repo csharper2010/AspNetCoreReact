@@ -14,12 +14,23 @@ namespace Getränkehandel.Web
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            CreateWebHostBuilder(args)
+                .Build()
+                .Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            // var configuration = new ConfigurationBuilder()
+            //     .AddCommandLine(args)
+            //     .Build();
+
+            // var hostUrl = configuration["hosturl"];
+            // if (string.IsNullOrEmpty(hostUrl)) {
+            //     hostUrl = "http://0.0.0.0:80";
+            // }
+
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
+                // .UseUrls(hostUrl)
+                .UseStartup<Startup>();
     }
 }

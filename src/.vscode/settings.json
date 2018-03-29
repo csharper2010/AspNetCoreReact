@@ -2,4 +2,5 @@
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "terminal.integrated.shellArgs.windows": ["-NoProfile"],
+    "tslint.configFile": "./Getränkehandel.Web/ClientApp/tslint.json"
 }

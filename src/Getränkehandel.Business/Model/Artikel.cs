@@ -1,12 +1,21 @@
+using System;
+
 namespace Getränkehandel.Business.Model
 {
-    public class Artikel : Abrechnungseintrag
+    public abstract class Artikel : Abrechnungseintrag
     {
-        private Artikel() : base()
+        protected Artikel(Action<object, string> lazyLoader) : base(lazyLoader)
         { }
-        public Artikel(string bezeichnung) : base(bezeichnung)
+        public Artikel(string artikelBezeichnung) : base(artikelBezeichnung)
         { }
-        public Artikel(string bezeichnung, string bezeichnungKurz) : base(bezeichnung, bezeichnungKurz)
+        public Artikel(string artikelBezeichnung, string artikelBezeichnungKurz) : base(artikelBezeichnung, artikelBezeichnungKurz)
         { }
+        public int? PfandID { get; set; }
+        private Pfand _pfand;
+        public Pfand Pfand
+        {
+            get => LazyLoader.Load(this, ref _pfand);
+            set => _pfand = value;
+        }
     }
 }

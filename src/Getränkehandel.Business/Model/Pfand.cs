@@ -1,12 +1,19 @@
+using System;
+
 namespace Getränkehandel.Business.Model
 {
     public class Pfand : Abrechnungseintrag
     {
-        private Pfand() : base()
+        private Pfand(Action<object, string> lazyLoader) : base(lazyLoader)
         { }
-        public Pfand(string bezeichnung) : base(bezeichnung)
-        { }
-        public Pfand(string bezeichnung, string bezeichnungKurz) : base(bezeichnung, bezeichnungKurz)
-        { }
+        public Pfand(string pfandBezeichnung, decimal betrag, int fixedId = 0) : base(pfandBezeichnung, fixedId: fixedId)
+        {
+            this.Betrag = betrag;
+        }
+        public Pfand(string pfandBezeichnung, string pfandBezeichnungKurz, decimal betrag, int fixedId = 0) : base(pfandBezeichnung, pfandBezeichnungKurz, fixedId: fixedId)
+        {
+            this.Betrag = betrag;
+        }
+        public decimal Betrag { get; private set; }
     }
 }
