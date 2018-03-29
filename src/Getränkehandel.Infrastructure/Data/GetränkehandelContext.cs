@@ -32,7 +32,8 @@ namespace Getränkehandel.Infrastructure.Data
             modelBuilder.Entity<Pfand>().Property(p => p.Betrag);//.HasConversion(new BetragConverter());
             modelBuilder.Entity<Artikel>().Property(a => a.PfandID);
             modelBuilder.Entity<Artikel>().HasOne(a => a.Pfand);
-            modelBuilder.Entity<Gebinde>().HasMany(g => g.Inhalt).WithOne(i => i.Parent).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Artikel>().HasMany<GebindeInhalt>().WithOne(i => i.Artikel).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Gebinde>().HasMany(g => g.Inhalt).WithOne(i => i.Parent).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Pfand>().SeedData(
                 new[] {
                     new { Bezeichnung = "Einwegpfand", Betrag = 0.25m, ID = 1 },
