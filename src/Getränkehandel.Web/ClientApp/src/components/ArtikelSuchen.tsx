@@ -191,7 +191,7 @@ function renderTable(props: ArtikelSuchenProps & CommonProps) {
                         <td>{r.bezeichnung}</td>
                         <td>{r.bezeichnungKurz}</td>
                         <td>{r.kurzCode}</td>
-                        <td>{r.aktiv}</td>
+                        <td><label className="form-checkbox"><input type="checkbox" checked={r.aktiv}/><i className="form-icon"/></label></td>
                         <td>
                             <button
                                 className="btn btn-primary btn-action"

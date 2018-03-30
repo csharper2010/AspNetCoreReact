@@ -76,13 +76,15 @@ namespace Getränkehandel.Web.Controllers
             }
         }
 
-        public class ArtikelResult {
-            public ArtikelResult(Artikel artikel) {
+        public class ArtikelResult
+        {
+            public ArtikelResult(Artikel artikel)
+            {
                 ID = artikel.ID;
                 Bezeichnung = artikel.Bezeichnung;
                 BezeichnungKurz = artikel.BezeichnungKurz;
-                Aktiv = Aktiv;
-                KurzCode = KurzCode;
+                Aktiv = artikel.Aktiv;
+                KurzCode = artikel.KurzCode;
             }
             public int ID { get; set; }
             public string Bezeichnung { get; set; }
