@@ -2,8 +2,8 @@ import * as React from 'react';
 import 'isomorphic-fetch';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
+import { merge } from 'rxjs/observable/merge';
 import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/merge';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/debounceTime';
@@ -11,9 +11,10 @@ import 'rxjs/add/observable/timer';
 
 import './ArtikelSuchen.css';
 
-import { Navigator, CommonProps, addRenderer } from '../Navigator'; 
+import { Navigator, CommonProps, addRenderer } from '../Navigator';
 import { MessageBoxYesNo, MessageBoxYesNoButton } from './MessageBoxYesNo';
 import { ProgressWithCancel } from './ProgressWithCancel';
+import { Grid, GridColumn } from './Grid';
 
 interface Artikel {
     id: string;
@@ -26,12 +27,16 @@ interface Artikel {
 export interface ArtikelSuchenProps {
     searchString: string;
     prevSearchString?: string;
-    searchResult: Array<Artikel>;
+    searchResult: {
+        items: Array<Artikel>,
+        selectedItemIndex?: number,
+    };
     actions: ArtikelSuchenActions;
 }
 
 interface ArtikelSuchenActions {
     setSearchString(searchString: string): void;
+    selectArtikel(id: string): void;
     startSearch(searchString: string): void;
     deleteArtikel(id: string): void;
     close(): void;
@@ -43,10 +48,9 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     private navigator: Navigator;
 
     private setSearchString$ = new Subject<{ searchString: string }>();
-    private startSearch$ = new Subject<{ searchString: string }>();
     private setSearchResult$ = new Subject<{ searchResult: Array<Artikel> }>();
-    private deleteArtikel$ = new Subject<{ id: string }>();
-    private rezeptDeleted$ = new Subject<{ id: string }>();
+    private artikelDeleted$ = new Subject<{ id: string }>();
+    private selectArtikel$ = new Subject<{ id: string }>();
     private close$ = new Subject<{}>();
 
     private reducer$: Observable<(prevState: ArtikelSuchenProps) => ArtikelSuchenProps>;
@@ -54,12 +58,12 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     public constructor(nav: Navigator) {
         this.navigator = nav;
         this.reducer$ = this.getReducer();
-        nav.pushNonModal(this.reducer$, {searchString: '', searchResult: [], actions: this}, rendererKey);
+        nav.pushNonModal(this.reducer$, { searchString: '', searchResult: { items: [] }, actions: this }, rendererKey);
 
         this.setSearchString$.debounceTime(500)
             .takeUntil(this.close$).subscribe(payload => {
                 this.startSearch(payload.searchString);
-        });
+            });
     }
 
     async waitForExit(): Promise<void> {
@@ -70,8 +74,11 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
         this.setSearchString$.next({ searchString });
     }
 
+    selectArtikel(id: string): void {
+        this.selectArtikel$.next({ id });
+    }
+
     async startSearch(searchString: string) {
-        this.startSearch$.next({ searchString });
         const response = await fetch('/api/artikel?suchbegriff=' + (encodeURI(searchString) || ''));
         if (response.status >= 400) {
             throw new Error('Bad response from server');
@@ -81,10 +88,9 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     }
 
     async deleteArtikel(id: string) {
-        this.deleteArtikel$.next({ id });
         const result = await MessageBoxYesNo.show(this.navigator, 'Artikel löschen?', 'Wollen Sie den Artikel wirklich löschen?');
         if (result === MessageBoxYesNoButton.Yes) {
-            const {wasCancelled} = await ProgressWithCancel.show(
+            const { wasCancelled } = await ProgressWithCancel.show(
                 this.navigator, 'Lösche Artikel', 'Artikel wird gelöscht', 100, Observable.timer(100, 100).take(10).map(n => n * 10)
             );
             if (!wasCancelled) {
@@ -92,7 +98,7 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
                 if (response.status >= 400) {
                     throw new Error('Bad response from server');
                 }
-                this.rezeptDeleted$.next({ id });
+                this.artikelDeleted$.next({ id });
             }
         }
     }
@@ -102,17 +108,35 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     }
 
     private getReducer(): Observable<(prevState: ArtikelSuchenProps) => ArtikelSuchenProps> {
-        return this.setSearchString$.map(payload => (prevState: ArtikelSuchenProps) => ({
-            ...prevState,
-            searchString: payload.searchString,
-        })).merge(
+        return merge(
+            this.setSearchString$.map(payload => (prevState: ArtikelSuchenProps) => ({
+                ...prevState,
+                searchString: payload.searchString,
+            })),
+            this.selectArtikel$.map(payload => (prevState: ArtikelSuchenProps) => ({
+                ...prevState,
+                searchResult: {
+                    ...prevState.searchResult,
+                    selectedItemIndex: prevState.searchResult.items.findIndex(a => a.id === payload.id),
+                }
+            })),
             this.setSearchResult$.map(payload => (prevState: ArtikelSuchenProps) => ({
                 ...prevState,
-                searchResult: payload.searchResult,
+                searchResult: {
+                    items: payload.searchResult,
+                    selectedItemIndex: payload.searchResult.length > 0 ? 0 : undefined,
+                }
             })),
-            this.rezeptDeleted$.map(payload => (prevState: ArtikelSuchenProps) => ({
+            this.artikelDeleted$.map(payload => (prevState: ArtikelSuchenProps) => ({
                 ...prevState,
-                searchResult: prevState.searchResult.filter(r => r.id !== payload.id),
+                searchResult: {
+                    items: prevState.searchResult.items.filter(r => r.id !== payload.id),
+                    selectedItemIndex: prevState.searchResult.selectedItemIndex === undefined
+                        ? undefined
+                        : (prevState.searchResult.items.length - 1 > prevState.searchResult.selectedItemIndex
+                            ? prevState.searchResult.selectedItemIndex
+                            : prevState.searchResult.selectedItemIndex - 1),
+                }
             })),
         ).takeUntil(this.close$);
     }
@@ -133,7 +157,7 @@ const ArtikelSuchenComponent = (props: ArtikelSuchenProps & CommonProps) => (
                     className="btn"
                     type="button"
                     onClick={event => { event.preventDefault(); props.actions.close(); }}
-                    {... getTabstopp(props)}
+                    {...getTabstopp(props)}
                 >Schließen
                 </button>
                 <input
@@ -143,18 +167,16 @@ const ArtikelSuchenComponent = (props: ArtikelSuchenProps & CommonProps) => (
                     }
                     onChange={
                         event => props.actions.setSearchString(event.target.value)
-                    } 
+                    }
                     className="form-input col-6"
-                    placeholder="Search Text" 
-                    {... getTabstopp(props)}
+                    placeholder="Search Text"
+                    {...getTabstopp(props)}
                     autoFocus={!props.inert}
                 />
-                <button className="btn btn-primary" type="submit" {... getTabstopp(props)}>Suchen</button>
+                <button className="btn btn-primary" type="submit" {...getTabstopp(props)}>Suchen</button>
             </div>
-            <div id="artikelSuchenResult" style={{'overflow': 'auto'}} tabIndex={0}>
-                {renderTable(props)}
-            </div>
-            <label id="artikelSuchenFooter" className="form-label">{props.searchResult.length} Zeilen gefunden</label>
+            {renderTable(props)}
+            <label id="artikelSuchenFooter" className="form-label">{props.searchResult.items.length} Zeilen gefunden</label>
         </div>
     </form>
 );
@@ -168,41 +190,32 @@ function getTabstopp(props: CommonProps): {} {
 }
 
 function renderTable(props: ArtikelSuchenProps & CommonProps) {
-    if (props.searchResult && props.searchResult.length > 0) {
+    if (props.searchResult.items && props.searchResult.items.length > 0) {
         return (
-            <table className="table table-striped table-hover">
-                <colgroup>
-                    <col />
-                    <col />
-                    <col width="50"/>
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th>Bezeichnung</th>
-                        <th>Kurzbezeichnung</th>
-                        <th>Kurzcode</th>
-                        <th>Aktiv</th>
-                        <th/>
-                    </tr>
-                </thead>
-                <tbody>
-                {props.searchResult.map(r => 
-                    <tr key={r.id}>
-                        <td>{r.bezeichnung}</td>
-                        <td>{r.bezeichnungKurz}</td>
-                        <td>{r.kurzCode}</td>
-                        <td><label className="form-checkbox"><input type="checkbox" checked={r.aktiv}/><i className="form-icon"/></label></td>
-                        <td>
-                            <button
-                                className="btn btn-primary btn-action"
-                                onClick={e => props.actions.deleteArtikel(r.id)}
-                                {... getTabstopp(props)}
-                            ><i className="icon icon-delete" />
-                            </button>
-                        </td>
-                    </tr>)}
-                </tbody>
-            </table>
+            <Grid items={props.searchResult.items} onDelete={(i) => props.actions.deleteArtikel(props.searchResult.items[i].id)}>
+                <GridColumn caption={'Bezeichnung'} content={(a: Artikel) => a.bezeichnung} />
+                <GridColumn caption={'Kurzbezeichnung'} content={(a: Artikel) => a.bezeichnungKurz} />
+                <GridColumn caption={'Kurzcode'} content={(a: Artikel) => a.kurzCode} />
+                <GridColumn
+                    caption={'Aktiv'}
+                    content={(a: Artikel) => (
+                        <label className="form-checkbox"><input type="checkbox" checked={a.aktiv} disabled={true} /><i className="form-icon" /></label>
+                    )}
+                    width={80}
+                />
+                <GridColumn
+                    caption={''}
+                    content={(a: Artikel) => (
+                        <button
+                            className="btn btn-primary btn-action"
+                            onClick={e => props.actions.deleteArtikel(a.id)}
+                            {...getTabstopp(props)}
+                        ><i className="icon icon-delete" />
+                        </button>
+                    )}
+                    width={50}
+                />
+            </Grid>
         );
     } else {
         return <></>;
