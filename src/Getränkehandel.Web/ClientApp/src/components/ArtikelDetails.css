@@ -1,0 +1,24 @@
+#artikelDetails {
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-rows: auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    -ms-grid-columns: 1fr;
+    height: 100vh;
+    width: 100vw;
+}
+
+#artikelDetailsTop {
+    -ms-grid-row: 1;
+    grid-row: 1; /* eigentlich würde bei standardkonformen Browsern auch implizite Zuweisung funktionieren, aber so geht's einheitlich und explizit über alle Browser */
+}
+
+#artikelDetailsResult {
+    -ms-grid-row: 2;
+    grid-row: 2; /* eigentlich würde bei standardkonformen Browsern auch implizite Zuweisung funktionieren, aber so geht's einheitlich und explizit über alle Browser */
+}
+
+#artikelDetailsFooter {
+    -ms-grid-row: 3;
+    grid-row: 3; /* eigentlich würde bei standardkonformen Browsern auch implizite Zuweisung funktionieren, aber so geht's einheitlich und explizit über alle Browser */
+}

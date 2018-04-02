@@ -24,9 +24,10 @@ interface GridProps<T> {
     selectedItemIndex?: number;
     onSelectedItemIndexChanged?: (newSelectedItemIndex: number) => boolean;
     onDelete?: (selectedItemIndex: number) => void;
+    onAcceptSelection?: (selectedItemIndex: number) => void;
 }
 
-export class Grid<T> extends React.Component<GridProps<T>, {selectedItemIndex: number}> {
+export class Grid<T> extends React.Component<GridProps<T>, { selectedItemIndex: number }> {
     constructor(props: GridProps<T>, context?: any) {
         super(props, context);
         this.state = {
@@ -39,9 +40,9 @@ export class Grid<T> extends React.Component<GridProps<T>, {selectedItemIndex: n
         const columns = this.props.children as GridColumn<T>[] || [];
         return (
             <div onKeyDown={e => this.keyDown(e)} tabIndex={0} style={{ 'overflow': 'auto' }}>
-                <table className="table table-hover">
+                <table className="table">
                     <colgroup>
-                        {(columns.map((c, index) => <col key={index} width={c.props.width}/>))}
+                        {(columns.map((c, index) => <col key={index} width={c.props.width} />))}
                     </colgroup>
                     <thead>
                         <tr>
@@ -67,24 +68,36 @@ export class Grid<T> extends React.Component<GridProps<T>, {selectedItemIndex: n
     }
 
     private keyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-        if (event.keyCode === 38 || event.keyCode === 37) {
-            const selectedItemIndex = this.props.selectedItemIndex || this.state.selectedItemIndex;
-            if (selectedItemIndex > 0) {
-                this.select(selectedItemIndex - 1);
-            }
-            event.preventDefault();
-        } else if (event.keyCode === 40 || event.keyCode === 39) {
-            const selectedItemIndex = this.props.selectedItemIndex || this.state.selectedItemIndex;
-            if (selectedItemIndex < this.props.items.length - 1) {
-                this.select(selectedItemIndex + 1);
-            }
-            event.preventDefault();
-        } else if (event.keyCode === 46) {
-            if (this.props.onDelete) {
-                const selectedItemIndex = this.props.selectedItemIndex || this.state.selectedItemIndex;
-                this.props.onDelete(selectedItemIndex);
+        const selectedItemIndex = this.props.selectedItemIndex || this.state.selectedItemIndex;
+        switch (event.keyCode) {
+            case 38:
+            case 37:
+                if (selectedItemIndex > 0) {
+                    this.select(selectedItemIndex - 1);
+                }
                 event.preventDefault();
-            }
+                break;
+            case 40:
+            case 39:
+                if (selectedItemIndex < this.props.items.length - 1) {
+                    this.select(selectedItemIndex + 1);
+                }
+                event.preventDefault();
+                break;
+            case 46:
+                if (this.props.onDelete) {
+                    this.props.onDelete(selectedItemIndex);
+                    event.preventDefault();
+                }
+                break;
+            case 13:
+                if (this.props.onAcceptSelection) {
+                    this.props.onAcceptSelection(selectedItemIndex);
+                    event.preventDefault();
+                }
+                break;
+            default:
+                break;
         }
     }
 }

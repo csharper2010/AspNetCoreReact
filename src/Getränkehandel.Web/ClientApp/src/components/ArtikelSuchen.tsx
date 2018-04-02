@@ -14,6 +14,7 @@ import './ArtikelSuchen.css';
 import { Navigator, CommonProps, addRenderer } from '../Navigator';
 import { MessageBoxYesNo, MessageBoxYesNoButton } from './MessageBoxYesNo';
 import { ProgressWithCancel } from './ProgressWithCancel';
+import { ArtikelDetails } from './ArtikelDetails';
 import { Grid, GridColumn } from './Grid';
 
 interface Artikel {
@@ -39,6 +40,7 @@ interface ArtikelSuchenActions {
     selectArtikel(id: string): void;
     startSearch(searchString: string): void;
     deleteArtikel(id: string): void;
+    showArtikelDetails(id: string): void;
     close(): void;
 }
 
@@ -101,6 +103,10 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
                 this.artikelDeleted$.next({ id });
             }
         }
+    }
+
+    async showArtikelDetails(id: string) {
+        await ArtikelDetails.show(this.navigator, id);
     }
 
     async close() {
@@ -175,7 +181,9 @@ const ArtikelSuchenComponent = (props: ArtikelSuchenProps & CommonProps) => (
                 />
                 <button className="btn btn-primary" type="submit" {...getTabstopp(props)}>Suchen</button>
             </div>
-            {renderTable(props)}
+            <div id="artikelSuchenResult">
+                {renderTable(props)}
+            </div>
             <label id="artikelSuchenFooter" className="form-label">{props.searchResult.items.length} Zeilen gefunden</label>
         </div>
     </form>
@@ -192,7 +200,11 @@ function getTabstopp(props: CommonProps): {} {
 function renderTable(props: ArtikelSuchenProps & CommonProps) {
     if (props.searchResult.items && props.searchResult.items.length > 0) {
         return (
-            <Grid items={props.searchResult.items} onDelete={(i) => props.actions.deleteArtikel(props.searchResult.items[i].id)}>
+            <Grid
+                items={props.searchResult.items}
+                onDelete={(i) => props.actions.deleteArtikel(props.searchResult.items[i].id)}
+                onAcceptSelection={(i) => props.actions.showArtikelDetails(props.searchResult.items[i].id)}
+            >
                 <GridColumn caption={'Bezeichnung'} content={(a: Artikel) => a.bezeichnung} />
                 <GridColumn caption={'Kurzbezeichnung'} content={(a: Artikel) => a.bezeichnungKurz} />
                 <GridColumn caption={'Kurzcode'} content={(a: Artikel) => a.kurzCode} />
