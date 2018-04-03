@@ -82,7 +82,7 @@ const ProgressWithCancelComponent = (props: ProgressWithCancelProps & CommonProp
                 <div className="content">
                 {props.children}
                 </div>
-                <progress value={props.progressValue} max={props.maxValue}/>
+                <progress className="progress" value={props.progressValue} max={props.maxValue}/>
             </div>
             <div className="modal-footer">
                 <button
