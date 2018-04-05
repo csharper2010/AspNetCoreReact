@@ -182,7 +182,10 @@ const ArtikelSuchenComponent = (props: ArtikelSuchenProps & CommonProps) => (
                 <button className="btn btn-primary" type="submit" {...getTabstopp(props)}>Suchen</button>
             </div>
             <div id="artikelSuchenResult">
-                {renderTable(props)}
+                <div className="flexColumnContainer">
+                    Test
+                    {renderTable(props)}
+                </div>
             </div>
             <label id="artikelSuchenFooter" className="form-label">{props.searchResult.items.length} Zeilen gefunden</label>
         </div>

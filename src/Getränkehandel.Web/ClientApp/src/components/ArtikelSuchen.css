@@ -16,9 +16,25 @@
 #artikelSuchenResult {
     -ms-grid-row: 2;
     grid-row: 2; /* eigentlich würde bei standardkonformen Browsern auch implizite Zuweisung funktionieren, aber so geht's einheitlich und explizit über alle Browser */
+    position: relative;
 }
 
 #artikelSuchenFooter {
     -ms-grid-row: 3;
     grid-row: 3; /* eigentlich würde bei standardkonformen Browsern auch implizite Zuweisung funktionieren, aber so geht's einheitlich und explizit über alle Browser */
+    position: relative;
+}
+
+.flexColumnContainer {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    display: flex;
+    flex-direction: column;
+}
+
+.flexColumnContainer .grid {
+    flex: 1;
 }
