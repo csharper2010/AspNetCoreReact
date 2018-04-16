@@ -6,14 +6,14 @@ namespace Getränkehandel.Business.Model
     {
         private Pfand(Action<object, string> lazyLoader) : base(lazyLoader)
         { }
-        public Pfand(string pfandBezeichnung, decimal betrag, int fixedId = 0) : base(pfandBezeichnung, fixedId: fixedId)
+        public Pfand(string pfandBezeichnung, Betrag betrag, int fixedId = 0) : base(pfandBezeichnung, fixedId: fixedId)
         {
             this.Betrag = betrag;
         }
-        public Pfand(string pfandBezeichnung, string pfandBezeichnungKurz, decimal betrag, int fixedId = 0) : base(pfandBezeichnung, pfandBezeichnungKurz, fixedId: fixedId)
+        public Pfand(string pfandBezeichnung, string pfandBezeichnungKurz, Betrag betrag, int fixedId = 0) : base(pfandBezeichnung, pfandBezeichnungKurz, fixedId: fixedId)
         {
             this.Betrag = betrag;
         }
-        public decimal Betrag { get; private set; }
+        public Betrag Betrag { get; private set; }
     }
 }

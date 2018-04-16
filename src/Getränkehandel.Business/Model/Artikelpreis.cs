@@ -15,6 +15,6 @@ namespace Getränkehandel.Business.Model
         private Artikel _artikel;
         public Artikel Artikel => _artikel;
         public DateTime GültigAb { get; set; }
-        public decimal? Preis { get; set; }
+        public Betrag Preis { get; set; }
     }
 }

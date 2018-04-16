@@ -1,6 +1,6 @@
 using System.Linq;
 using Getränkehandel.Business.Model;
-using Getränkehandel.Infrastructure.Data.Converters;
+using Getränkehandel.Infrastructure.Data.ValueConversion;
 using Microsoft.EntityFrameworkCore;
 
 namespace Getränkehandel.Infrastructure.Data
@@ -29,12 +29,12 @@ namespace Getränkehandel.Infrastructure.Data
             modelBuilder.Entity<EinfacherArtikel>().HasBaseType<Artikel>();
             modelBuilder.Entity<Gebinde>().HasBaseType<Artikel>();
             modelBuilder.Entity<Pfand>().HasBaseType<Abrechnungseintrag>();
-            modelBuilder.Entity<Pfand>().Property(p => p.Betrag);//.HasConversion(new BetragConverter());
+            modelBuilder.Entity<Pfand>().Property(p => p.Betrag).HasConversion(new BetragConverter());
             modelBuilder.Entity<Artikel>().Property(a => a.PfandID);
             modelBuilder.Entity<Artikel>().HasOne(a => a.Pfand);
             modelBuilder.Entity<Artikel>().HasMany<GebindeInhalt>().WithOne(i => i.Artikel).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Gebinde>().HasMany(g => g.Inhalt).WithOne(i => i.Parent).OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<Pfand>().SeedData(
+            modelBuilder.Entity<Pfand>().HasData(
                 new[] {
                     new { Bezeichnung = "Einwegpfand", Betrag = 0.25m, ID = 1 },
                     new { Bezeichnung = "MW-Pfand Glas", Betrag = 0.08m, ID = 2 },
@@ -42,7 +42,7 @@ namespace Getränkehandel.Infrastructure.Data
                     new { Bezeichnung = "MW-Pfand PET", Betrag = 0.15m, ID = 4 },
                     new { Bezeichnung = "MW-Pfand Kiste", Betrag = 1.50m, ID = 5 },
                     new { Bezeichnung = "MW-Pfand ½ Kiste", Betrag = 0.75m, ID = 6 }
-                }.Select(v => new { v.Bezeichnung, BezeichnungKurz = v.Bezeichnung, /*Betrag = new Betrag(*/v.Betrag/*)*/, v.ID, discriminator = "P", Aktiv = true })
+                }.Select(v => new { v.Bezeichnung, BezeichnungKurz = v.Bezeichnung, Betrag = new Betrag(v.Betrag), v.ID, discriminator = "P", Aktiv = true })
                 .ToArray()
             );
 
@@ -63,6 +63,7 @@ namespace Getränkehandel.Infrastructure.Data
             modelBuilder.Entity<Artikelpreis>().HasOne(a => a.Preisliste);
             modelBuilder.Entity<Artikelpreis>().Property(a => a.ArtikelID).HasField("_artikelID");
             modelBuilder.Entity<Artikelpreis>().HasOne(a => a.Artikel);
+            modelBuilder.Entity<Artikelpreis>().Property(a => a.Preis).HasConversion(new BetragConverter());
 
             modelBuilder.Entity<Preisermittlung>().ToTable("PRICING_Preisermittlung");
             modelBuilder.Entity<Preisermittlung>().Property(a => a.ID).HasField("_id");
