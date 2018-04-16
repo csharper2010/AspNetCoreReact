@@ -12,3 +12,10 @@ if (NodeList && !(NodeList.prototype as any).forEach) {
         }
     };
 }
+
+if (!Math.trunc) {
+    Math.trunc = function (v: number) {
+        v = +v;
+        return (v - v % 1) || (!isFinite(v) || v === 0 ? v : v < 0 ? -0 : 0);
+    };
+}
