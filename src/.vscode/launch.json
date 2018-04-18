@@ -37,6 +37,7 @@
             "sourceFileMap": {
                 "/Views": "${workspaceRoot}/Getränkehandel.Web/Views",
             },
+            "justMyCode": false,
         },
         {
             "name": ".NET Core Attach",
