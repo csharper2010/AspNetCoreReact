@@ -39,7 +39,7 @@ namespace Getränkehandel.Business.Tests
                 int flushedArtikelID = artikel.ID;
 
                 var artikelFromSameContext = await repository.GetById(flushedArtikelID);
-                var artikelFromOtherContext = await new BaseRepository<Artikel, int>(new GetränkehandelContext()).GetById(flushedArtikelID);
+                var artikelFromOtherContext = await new BaseRepository<Artikel, int>(otherContext).GetById(flushedArtikelID);
                 Assert.Equal(0, initialArtikelID);
                 Assert.True(savedArtikelID < 0);
                 Assert.True(flushedArtikelID > 0);
