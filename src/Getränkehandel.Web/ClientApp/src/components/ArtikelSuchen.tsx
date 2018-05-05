@@ -13,6 +13,7 @@ import './ArtikelSuchen.css';
 
 import { Navigator, CommonProps, addRenderer } from '../Navigator';
 import { MessageBoxYesNo, MessageBoxYesNoButton } from './MessageBoxYesNo';
+import { MessageBoxOk } from './MessageBoxOk';
 import { ProgressWithCancel } from './ProgressWithCancel';
 import { ArtikelDetails } from './ArtikelDetails';
 import { Grid, GridColumn } from './Grid';
@@ -28,6 +29,7 @@ interface Artikel {
 export interface ArtikelSuchenProps {
     searchString: string;
     prevSearchString?: string;
+    searching: boolean;
     searchResult: {
         items: Array<Artikel>,
         selectedItemIndex?: number,
@@ -50,6 +52,7 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     private navigator: Navigator;
 
     private setSearchString$ = new Subject<{ searchString: string }>();
+    private startSearching$ = new Subject<{ searchString: string }>();
     private setSearchResult$ = new Subject<{ searchResult: Array<Artikel> }>();
     private artikelDeleted$ = new Subject<{ id: string }>();
     private selectArtikel$ = new Subject<{ id: string }>();
@@ -60,7 +63,7 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     public constructor(nav: Navigator) {
         this.navigator = nav;
         this.reducer$ = this.getReducer();
-        nav.pushNonModal(this.reducer$, { searchString: '', searchResult: { items: [] }, actions: this }, rendererKey);
+        nav.pushNonModal(this.reducer$, { searchString: '', searching: false, searchResult: { items: [] }, actions: this }, rendererKey);
 
         this.setSearchString$.debounceTime(500)
             .takeUntil(this.close$).subscribe(payload => {
@@ -81,6 +84,7 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
     }
 
     async startSearch(searchString: string) {
+        this.startSearching$.next({ searchString });
         const response = await fetch('/api/artikel?suchbegriff=' + (encodeURI(searchString) || ''));
         if (response.status >= 400) {
             throw new Error('Bad response from server');
@@ -97,10 +101,16 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
             );
             if (!wasCancelled) {
                 const response = await fetch('/api/artikel/' + (encodeURI(id)), { method: 'DELETE' });
-                if (response.status >= 400) {
+                if (response.status === 409) {
+                    await MessageBoxOk.show(
+                        this.navigator,
+                        'Löschen nicht erfolgreich',
+                        'Artikel wird von anderen Objekten referenziert und kann daher nicht gelöscht werden');
+                } else if (response.status >= 400) {
                     throw new Error('Bad response from server');
+                } else {
+                    this.artikelDeleted$.next({ id });
                 }
-                this.artikelDeleted$.next({ id });
             }
         }
     }
@@ -119,6 +129,10 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
                 ...prevState,
                 searchString: payload.searchString,
             })),
+            this.startSearching$.map(payload => (prevState: ArtikelSuchenProps) => ({
+                ...prevState,
+                searching: true,
+            })),
             this.selectArtikel$.map(payload => (prevState: ArtikelSuchenProps) => ({
                 ...prevState,
                 searchResult: {
@@ -128,6 +142,7 @@ class ArtikelSuchenWF implements ArtikelSuchenActions {
             })),
             this.setSearchResult$.map(payload => (prevState: ArtikelSuchenProps) => ({
                 ...prevState,
+                searching: false,
                 searchResult: {
                     items: payload.searchResult,
                     selectedItemIndex: payload.searchResult.length > 0 ? 0 : undefined,
@@ -179,11 +194,10 @@ const ArtikelSuchenComponent = (props: ArtikelSuchenProps & CommonProps) => (
                     {...getTabstopp(props)}
                     autoFocus={!props.inert}
                 />
-                <button className="btn btn-primary" type="submit" {...getTabstopp(props)}>Suchen</button>
+                <button className={'btn btn-primary' + (props.searching ? ' loading' : '')} type="submit" {...getTabstopp(props)}>Suchen</button>
             </div>
             <div id="artikelSuchenResult">
                 <div className="flexColumnContainer">
-                    Test
                     {renderTable(props)}
                 </div>
             </div>

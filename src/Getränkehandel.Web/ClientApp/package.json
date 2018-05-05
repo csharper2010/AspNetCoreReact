@@ -5,13 +5,13 @@
   "dependencies": {
     "event-source-polyfill": "^0.0.12",
     "isomorphic-fetch": "^2.2.1",
-    "react": "^16.3.1",
+    "react": "^16.3.2",
     "react-app-rewire-hot-loader": "^1.0.1",
     "react-app-rewired": "^1.5.0",
-    "react-dom": "^16.3.1",
+    "react-dom": "^16.3.2",
     "react-hot-loader": "^4.0.1",
     "react-scripts-ts": "2.14.0",
-    "rxjs": "^5.5.8",
+    "rxjs": "^5.5.10",
     "spectre.css": "^0.5.1",
     "uuid": "^3.2.1"
   },
@@ -22,10 +22,10 @@
     "eject": "react-app-rewired eject --scripts-version react-scripts-ts"
   },
   "devDependencies": {
-    "@types/jest": "^22.2.2",
-    "@types/node": "^9.6.2",
-    "@types/react": "^16.3.5",
-    "@types/react-dom": "^16.0.4",
+    "@types/jest": "^22.2.3",
+    "@types/node": "^9.6.5",
+    "@types/react": "^16.3.11",
+    "@types/react-dom": "^16.0.5",
     "@types/uuid": "^3.4.3",
     "typescript": "^2.8.1"
   }

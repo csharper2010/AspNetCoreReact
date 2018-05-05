@@ -2,7 +2,7 @@ using System;
 
 namespace Getränkehandel.Business.Model
 {
-    public abstract class Artikel : Abrechnungseintrag
+    public /* TEMP wegen #11692 abstract*/ class Artikel : Abrechnungseintrag
     {
         protected Artikel(Action<object, string> lazyLoader) : base(lazyLoader)
         { }

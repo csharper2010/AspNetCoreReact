@@ -7,6 +7,7 @@ using Getränkehandel.Business.Model;
 using Getränkehandel.Business.Repository;
 using System.Linq.Expressions;
 using Getränkehandel.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Getränkehandel.Web.Controllers
 {
@@ -67,7 +68,14 @@ namespace Getränkehandel.Web.Controllers
             if (artikel != null)
             {
                 repository.Delete(artikel);
-                await dbContext.SaveChangesAsync();
+                try
+                {
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (DbUpdateException e)
+                {
+                    return Conflict("Artikel wird von anderen Objekten referenziert");
+                }
                 return Ok();
             }
             else
