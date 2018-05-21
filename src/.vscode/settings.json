@@ -5,5 +5,6 @@
     "tslint.configFile": "./Getränkehandel.Web/ClientApp/tslint.json",
     "csharp.unitTestDebuggingOptions": {
         "justMyCode": false
-    }
+    },
+    "dotnet-test-explorer.testProjectPath": "./test/Getränkehandel.Business.Tests"
 }
